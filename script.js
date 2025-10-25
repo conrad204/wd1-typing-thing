@@ -16,6 +16,10 @@ const quoteElement = document.getElementById('quote');
 const messageElement = document.getElementById('message');
 const typedValueElement = document.getElementById('typed-value');
 
+document.addEventListener("DOMContentLoaded", () => {
+    loadPersonalBest();
+});
+
 document.getElementById('start').addEventListener('click', () => {
     const quoteIndex = Math.floor(Math.random() * quotes.length)
     const quote = quotes[quoteIndex];
@@ -30,14 +34,31 @@ document.getElementById('start').addEventListener('click', () => {
     startTime = new Date().getTime()
 });
 
+document.getElementById('reset').addEventListener('click', () => {
+    localStorage.clear();
+    location.reload();
+});
+
 typedValueElement.addEventListener('input', () => {
     const currentWord = words[wordIndex];
     const typedValue = typedValueElement.value;
 
     if (typedValue === currentWord && wordIndex === words.length - 1){
+        const pad = n => n.toString().padStart(2, "0");
         const elapsedTime = new Date().getTime() - startTime;
-        const message = `congrats, you\'re not a bum and you finished in ${elapsedTime / 1000} seconds.`; // use backticks
+        const wpmRaw= (wordIndex+1)/((elapsedTime/1000)/60);
+        const wpm = wpmRaw.toFixed(2);
+        const message = `congrats, you\'re not a bum and you finished in ${elapsedTime / 1000} seconds and you type at a speed of ${wpm}.`; // use backticks
         messageElement.innerText = message;
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
+        const hour = now.getHours();
+        const min = now.getMinutes();
+        const seconds = now.getSeconds();
+        const dateString = `${year}-${pad(month)}-${pad(day)} ${pad(hour)}:${pad(min)}:${pad(seconds)}`;
+        saveWpm(dateString, wpm);
     }
     else if (typedValue.endsWith(' ') && typedValue.trim() === currentWord){
         typedValueElement.value = '';
@@ -58,3 +79,18 @@ typedValueElement.addEventListener('input', () => {
     }
 
 });
+
+function saveWpm(runDate, runWpm){
+    localStorage.setItem(runDate, JSON.stringify(runWpm));
+}
+
+function loadPersonalBest(){
+    const table = document.getElementById("wpmPersonalBest");
+    for (let i = 0; i < localStorage.length; i++){
+        const date = localStorage.key(i);
+        const wpm = JSON.parse(localStorage.getItem(date));
+        const row = table.insertRow();
+        row.insertCell(0).textContent = date;
+        row.insertCell(1).textContent = wpm;
+    }
+}
