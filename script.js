@@ -1,12 +1,30 @@
-const quotes = [
-    'When you have eliminated the impossible, whatever remains, however improbable, must be the truth.',
-    'There is nothing more deceptive than an obvious fact.',
-    'I ought to know by this time that when a fact appears to be opposed to a long train of deductions it invariably proves to be capable of bearing some other interpretation.',
-    'I never make exceptions. An exception disproves the rule.',
-    'What one man can invent another can discover.',
-    'Nothing clears up a case so much as stating it to another person.',
-    'Education never ends, Watson. It is a series of lessons, with the greatest for the last.',
-];
+import { API_KEY } from "./config.js";
+
+async function fetchQuote(){
+    try{
+        const res = await fetch("https://api.api-ninjas.com/v1/quotes", {
+            method: "GET",
+            headers: {
+                "X-Api-Key": API_KEY,
+            }
+        })
+        const data = await res.json();
+        const quote = data[0];
+        return quote;
+    }
+
+    catch(error){
+        console.log("Fetching error:", error)
+        return "your quote didn't load, so type this instead."
+    }
+}
+
+async function main(){
+    const getQuote = await fetchQuote();
+    return getQuote;
+}
+
+fetchQuote();
 
 let words = [];
 let wordIndex = 0;
@@ -20,9 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
     loadPersonalBest();
 });
 
-document.getElementById('start').addEventListener('click', () => {
-    const quoteIndex = Math.floor(Math.random() * quotes.length)
-    const quote = quotes[quoteIndex];
+document.getElementById('start').addEventListener('click', async () => {
+    const quoteObj = await main();
+    const quote = quoteObj.quote;
     words = quote.split(' ');
     wordIndex = 0;
     const spanWords = words.map(function(word) {return `<span>${word} </span>`});
@@ -48,7 +66,7 @@ typedValueElement.addEventListener('input', () => {
         const elapsedTime = new Date().getTime() - startTime;
         const wpmRaw= (wordIndex+1)/((elapsedTime/1000)/60);
         const wpm = wpmRaw.toFixed(2);
-        const message = `congrats, you\'re not a bum and you finished in ${elapsedTime / 1000} seconds and you type at a speed of ${wpm}.`; // use backticks
+        const message = `congrats, you\'re not a bum and you finished in ${elapsedTime / 1000} seconds and you type at a speed of ${wpm} wpm.`; // use backticks
         messageElement.innerText = message;
         const now = new Date();
         const year = now.getFullYear();
