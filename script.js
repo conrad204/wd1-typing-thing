@@ -111,4 +111,5 @@ function loadPersonalBest(){
         row.insertCell(0).textContent = date;
         row.insertCell(1).textContent = wpm;
     }
+    
 }
